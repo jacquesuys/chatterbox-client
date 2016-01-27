@@ -16,7 +16,6 @@ var escapeHtml = function(string) {
 var app = {
   username: window.location.search.split("=")[1],
   server: 'https://api.parse.com/1/classes/chatterbox',
-  room: 'lobby',
   init: function() {
     // fetch
     app.fetch();
@@ -32,15 +31,21 @@ var app = {
       app.send($obj);
     });
 
-    $('#roomSelect').on('change', function(e){
-      console.log( $(this).val() );
+    $('body').on('change', '#roomSelect', function(e){
+      app.room = $(this).val();
+      app.fetch();
+    });
+
+    $('body').on('click', '.username', function(e){
+      e.preventDefault();
+      console.log( $(this).text() );
     });
 
     // refreshing
-    setInterval(function(){
-      app.fetch();
-      console.log('refreshing..');
-    }, 3000);
+    // setInterval(function(){
+    //   app.fetch();
+    //   console.log('refreshing..');
+    // }, 3000);
   },
   send: function(message) {
     $.ajax({
@@ -58,16 +63,24 @@ var app = {
     });
   },
   fetch: function() {
+    var $obj = {};
+    $obj.order = '-createdAt';
+
+    if (app.room) {
+      $obj.where = {roomname: app.room};
+    }
+
     $.ajax({
       url: app.server,
       method: 'GET',
-      data: JSON.stringify({order: '-createdAt', limit: 1000}),
+      data: JSON.stringify($obj),
       contentType: 'application/json',
       success: function (data) {
         var $results = data.results;
         var $html = '';
         var $options = '';
         var $rooms = {};
+        var $currentRoom = $('#roomSelect').val() || 'lobby';
 
         $.each($results, function(index, message) {
           $html += '<div class="message">' + escapeHtml(message.text) + '</div>';
@@ -83,6 +96,8 @@ var app = {
 
         $('#chats').html($html);
         $('#roomSelect').html($options);
+
+        console.log($currentRoom);
       },
       error: function (data) {
         console.error('chatterbox: Failed to send message');

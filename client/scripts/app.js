@@ -16,7 +16,7 @@ var escapeHtml = function(string) {
 var app = {
   username: window.location.search.split("=")[1],
   server: 'https://api.parse.com/1/classes/chatterbox',
-  friends
+  friends: {},
   init: function() {
     // fetch
     app.fetch();
@@ -24,18 +24,14 @@ var app = {
     $('.submit').on('click', function(e){
       e.preventDefault();
 
-      var $obj = {};
-      $obj.text = $('#message').val();
-      $obj.username = app.username;
-      $obj.room = app.room;
-
-      app.send($obj);
+      app.handleSubmit();
     });
 
-    $('body').on('change', '#roomSelect', function(e){
-      app.room = $(this).val();
+    // refreshing
+    setInterval(function(){
       app.fetch();
-    });
+      console.log('refreshing..');
+    }, 3000);
 
     $('body').on('click', '.username', function(e){
       e.preventDefault();
@@ -43,11 +39,10 @@ var app = {
       app.addFriend($friend);
     });
 
-    // refreshing
-    // setInterval(function(){
-    //   app.fetch();
-    //   console.log('refreshing..');
-    // }, 3000);
+    $('#roomSelect').on('change', function(e){
+      app.room = $(this).val();
+      app.fetch();
+    });
   },
   send: function(message) {
     $.ajax({
@@ -65,13 +60,11 @@ var app = {
     });
   },
   fetch: function() {
-    var $obj = {};
-    $obj['order'] = '-createdAt';
 
     $.ajax({
       url: app.server,
       method: 'GET',
-      data: JSON.stringify($obj),
+      data: {'order': '-createdAt'},
       contentType: 'application/json',
       success: function (data) {
         var $results = data.results;
@@ -81,8 +74,13 @@ var app = {
         var $currentRoom = $('#roomSelect').val() || 'lobby';
 
         $.each($results, function(index, message) {
-          $html += '<div class="message">' + escapeHtml(message.text) + '</div>';
+          if ( app.friends[escapeHtml(message.username)] ) {
+            $html += '<div class="message friend">' + escapeHtml(message.text) + '</div>';
+          } else {
+            $html += '<div class="message">' + escapeHtml(message.text) + '</div>';
+          }
           $html += '<a href="#" class="username">' + escapeHtml(message.username) + '</a>';
+
           if ( !$rooms[escapeHtml(message.roomname)] ) {
             $rooms[escapeHtml(message.roomname)] = escapeHtml(message.roomname);
           }
@@ -108,8 +106,18 @@ var app = {
   },
   addRoom: function(roomName) {
   },
-  addFriend: function() {
+  addFriend: function(friend) {
+    if ( !app.friends[friend] ) {
+      app.friends[friend] = friend;
+    }
+    app.fetch();
   },
   handleSubmit: function() {
+    var $obj = {};
+    $obj['text'] = $('#message').val();
+    $obj['username'] = app.username;
+    $obj['roomname'] = app.room || 'lobby';
+
+    app.send($obj);
   }
 };

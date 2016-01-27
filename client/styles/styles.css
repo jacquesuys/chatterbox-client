@@ -6,13 +6,14 @@ body {
 }
 
 #main, #chats {
-    width: 500px;
+    width: auto;
     margin: auto;
     text-align: left;
     background: white;
-    padding: 50px 60px;
-    border: solid #ddd;
-    border-width: 0 1px 1px 1px;
+}
+
+#main {
+    padding: 0 53px;
 }
 
 #main h1 {
@@ -46,40 +47,9 @@ body {
     line-height: 13px;
 }
 
-form {
+.formContainer {
     padding: 20px;
-    padding-left: 0;
-    margin-bottom: 20px;
-}
-
-form input[type=text] {
-    margin-right: 10px;
-    width: 70%;
-    font-size: 12px;
-    padding: 5px;
-}
-
-.chat {
-    padding: 5px;
-    margin-bottom: 5px;
-    background-color: #eee;
-}
-
-.chat .username {
-    font-weight: 800;
-    color: blue;
-}
-
-.chat:hover {
-    background-color: #ddd;
-}
-
-.spinner {
-    float: right;
-    height: 46px;
-    margin-bottom: 5px;
-}
-
-.spinner img {
-    padding: 10px;
+    margin: 20px 0px;
+    background: #ddd;
+    border-radius: 5px;
 }

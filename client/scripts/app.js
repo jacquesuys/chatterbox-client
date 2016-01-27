@@ -14,16 +14,33 @@ var escapeHtml = function(string) {
 };
 
 var app = {
+  username: window.location.search.split("=")[1],
   server: 'https://api.parse.com/1/classes/chatterbox',
+  room: 'lobby',
   init: function() {
     // fetch
     app.fetch();
 
     $('.submit').on('click', function(e){
       e.preventDefault();
+
       var $obj = {};
+      $obj.text = $('#message').val();
+      $obj.username = app.username;
+      $obj.room = app.room;
+
       app.send($obj);
     });
+
+    $('#roomSelect').on('change', function(e){
+      console.log( $(this).val() );
+    });
+
+    // refreshing
+    setInterval(function(){
+      app.fetch();
+      console.log('refreshing..');
+    }, 3000);
   },
   send: function(message) {
     $.ajax({
@@ -32,6 +49,7 @@ var app = {
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function (data) {
+        console.log(data);
         app.fetch();
       },
       error: function (data) {
@@ -43,18 +61,28 @@ var app = {
     $.ajax({
       url: app.server,
       method: 'GET',
-      data: JSON.stringify(message),
+      data: JSON.stringify({order: '-createdAt', limit: 1000}),
       contentType: 'application/json',
       success: function (data) {
         var $results = data.results;
         var $html = '';
+        var $options = '';
+        var $rooms = {};
 
         $.each($results, function(index, message) {
-          $html += '<div class="text">' + escapeHtml(message.text) + '</div>';
+          $html += '<div class="message">' + escapeHtml(message.text) + '</div>';
           $html += '<a href="#" class="username">' + escapeHtml(message.username) + '</a>';
+          if ( !$rooms[escapeHtml(message.roomname)] ) {
+            $rooms[escapeHtml(message.roomname)] = escapeHtml(message.roomname);
+          }
+        });
+
+        $.each($rooms, function(index, room) {
+          $options += '<option>' + room + '</option>';
         });
 
         $('#chats').html($html);
+        $('#roomSelect').html($options);
       },
       error: function (data) {
         console.error('chatterbox: Failed to send message');

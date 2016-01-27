@@ -16,7 +16,6 @@ var escapeHtml = function(string) {
 var app = {
   username: window.location.search.split("=")[1],
   server: 'https://api.parse.com/1/classes/chatterbox',
-  room: 'lobby',
   friends: {},
   init: function() {
     // fetch
@@ -36,14 +35,12 @@ var app = {
     $('body').on('click', '.username', function(e){
       e.preventDefault();
       var $friend  = $(this).text();
-      if ( !app.friends[$friend] ) {
-        app.friends[$friend] = $friend;
-      }
-      app.fetch();
+      app.addFriend($friend);
     });
 
     $('#roomSelect').on('change', function(e){
-      console.log( $(this).val() );
+      app.room = $(this).val();
+      app.fetch();
     });
   },
   send: function(message) {
@@ -80,6 +77,7 @@ var app = {
             $html += '<div class="message">' + escapeHtml(message.text) + '</div>';
           }
           $html += '<a href="#" class="username">' + escapeHtml(message.username) + '</a>';
+
           if ( !$rooms[escapeHtml(message.roomname)] ) {
             $rooms[escapeHtml(message.roomname)] = escapeHtml(message.roomname);
           }
@@ -105,7 +103,11 @@ var app = {
   },
   addRoom: function(roomName) {
   },
-  addFriend: function() {
+  addFriend: function(friend) {
+    if ( !app.friends[friend] ) {
+      app.friends[friend] = friend;
+    }
+    app.fetch();
   },
   handleSubmit: function() {
   }

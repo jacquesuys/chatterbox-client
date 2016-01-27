@@ -53,3 +53,7 @@ body {
     background: #ddd;
     border-radius: 5px;
 }
+
+.friend {
+    font-weight: bold;
+}

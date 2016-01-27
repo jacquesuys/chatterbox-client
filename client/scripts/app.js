@@ -17,6 +17,7 @@ var app = {
   username: window.location.search.split("=")[1],
   server: 'https://api.parse.com/1/classes/chatterbox',
   room: 'lobby',
+  friends: {},
   init: function() {
     // fetch
     app.fetch();
@@ -32,15 +33,18 @@ var app = {
       app.send($obj);
     });
 
+    $('body').on('click', '.username', function(e){
+      e.preventDefault();
+      var $friend  = $(this).text();
+      if ( !app.friends[$friend] ) {
+        app.friends[$friend] = $friend;
+      }
+      app.fetch();
+    });
+
     $('#roomSelect').on('change', function(e){
       console.log( $(this).val() );
     });
-
-    // refreshing
-    setInterval(function(){
-      app.fetch();
-      console.log('refreshing..');
-    }, 3000);
   },
   send: function(message) {
     $.ajax({
@@ -70,7 +74,11 @@ var app = {
         var $rooms = {};
 
         $.each($results, function(index, message) {
-          $html += '<div class="message">' + escapeHtml(message.text) + '</div>';
+          if ( app.friends[escapeHtml(message.username)] ) {
+            $html += '<div class="message friend">' + escapeHtml(message.text) + '</div>';
+          } else {
+            $html += '<div class="message">' + escapeHtml(message.text) + '</div>';
+          }
           $html += '<a href="#" class="username">' + escapeHtml(message.username) + '</a>';
           if ( !$rooms[escapeHtml(message.roomname)] ) {
             $rooms[escapeHtml(message.roomname)] = escapeHtml(message.roomname);

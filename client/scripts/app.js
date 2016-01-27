@@ -16,6 +16,7 @@ var escapeHtml = function(string) {
 var app = {
   username: window.location.search.split("=")[1],
   server: 'https://api.parse.com/1/classes/chatterbox',
+  friends
   init: function() {
     // fetch
     app.fetch();
@@ -38,7 +39,8 @@ var app = {
 
     $('body').on('click', '.username', function(e){
       e.preventDefault();
-      console.log( $(this).text() );
+      var $friend = $(this).text();
+      app.addFriend($friend);
     });
 
     // refreshing
@@ -64,11 +66,7 @@ var app = {
   },
   fetch: function() {
     var $obj = {};
-    $obj.order = '-createdAt';
-
-    if (app.room) {
-      $obj.where = {roomname: app.room};
-    }
+    $obj['order'] = '-createdAt';
 
     $.ajax({
       url: app.server,
@@ -96,8 +94,6 @@ var app = {
 
         $('#chats').html($html);
         $('#roomSelect').html($options);
-
-        console.log($currentRoom);
       },
       error: function (data) {
         console.error('chatterbox: Failed to send message');
